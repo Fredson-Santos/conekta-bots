@@ -1,0 +1,5 @@
+sqlmodel
+fastapi
+uvicorn
+telethon
+python-dotenv

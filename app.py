@@ -67,6 +67,43 @@ async def deletar_bot(id: int, session: Session = Depends(get_session)):
         session.commit()
     return RedirectResponse(url="/", status_code=303)
 
+@app.get("/bots/editar/{id}", response_class=HTMLResponse)
+async def form_editar_bot(request: Request, id: int, session: Session = Depends(get_session)):
+    bot = session.get(Bot, id)
+    if not bot:
+        return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse("editar_bot.html", {"request": request, "bot": bot})
+
+@app.post("/bots/editar/{id}")
+async def atualizar_bot(
+    id: int,
+    nome: str = Form(...),
+    tipo: str = Form(...),
+    api_id: str = Form(...),
+    api_hash: str = Form(...),
+    bot_token: str = Form(None),
+    phone: str = Form(None),
+    session_string: str = Form(None),
+    session: Session = Depends(get_session)
+):
+    bot = session.get(Bot, id)
+    if bot:
+        bot.nome = nome
+        bot.tipo = tipo
+        bot.api_id = api_id
+        bot.api_hash = api_hash
+        bot.bot_token = bot_token
+        bot.phone = phone
+        
+        # Só atualiza a sessão se o usuário colou uma nova. 
+        # Se deixar em branco, mantém a que já estava funcionando.
+        if session_string and session_string.strip():
+            bot.session_string = session_string
+            
+        session.add(bot)
+        session.commit()
+    return RedirectResponse(url="/", status_code=303)
+
 # --- REGRAS ---
 
 @app.get("/regras", response_class=HTMLResponse)
@@ -93,6 +130,41 @@ async def criar_regra(
 async def deletar_regra(id: int, session: Session = Depends(get_session)):
     regra = session.get(Regra, id)
     if regra: session.delete(regra); session.commit()
+    return RedirectResponse(url="/regras", status_code=303)
+
+@app.get("/regras/editar/{id}", response_class=HTMLResponse)
+async def form_editar_regra(request: Request, id: int, session: Session = Depends(get_session)):
+    regra = session.get(Regra, id)
+    bots = session.exec(select(Bot)).all()
+    if not regra:
+        return RedirectResponse(url="/regras", status_code=303)
+    return templates.TemplateResponse("editar_regra.html", {"request": request, "regra": regra, "bots": bots})
+
+@app.post("/regras/editar/{id}")
+async def atualizar_regra(
+    id: int,
+    nome: str = Form(...),
+    origem: str = Form(...),
+    destino: str = Form(...),
+    bot_id: int = Form(...),
+    filtro: str = Form(None), 
+    substituto: str = Form(None),
+    bloqueios: str = Form(None), 
+    somente_se_tiver: str = Form(None),
+    session: Session = Depends(get_session)
+):
+    regra = session.get(Regra, id)
+    if regra:
+        regra.nome = nome
+        regra.origem = origem
+        regra.destino = destino
+        regra.bot_id = bot_id
+        regra.filtro = filtro
+        regra.substituto = substituto
+        regra.bloqueios = bloqueios
+        regra.somente_se_tiver = somente_se_tiver
+        session.add(regra)
+        session.commit()
     return RedirectResponse(url="/regras", status_code=303)
 
 # --- AGENDAMENTOS ---

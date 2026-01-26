@@ -112,8 +112,16 @@
                             <span class="text-gray-400 mx-1">➡</span>
                             <span class="bg-gray-200 px-2 py-1 rounded text-xs">{{ regra.destino }}</span>
                         </td>
-                        <td class="px-5 py-4 text-sm">
-                            <a href="/regras/deletar/{{ regra.id }}" class="text-red-600 hover:text-red-900 font-bold text-xs uppercase">Excluir</a>
+                        <td class="px-5 py-4 text-sm flex gap-2">
+                            <a href="/regras/editar/{{ regra.id }}" 
+                               class="text-blue-600 hover:text-blue-900 font-bold text-xs uppercase border border-blue-200 px-3 py-1 rounded hover:bg-blue-50">
+                                ✏️ Editar
+                            </a>
+
+                            <a href="/regras/deletar/{{ regra.id }}" onclick="return confirm('Tem certeza?')" 
+                               class="text-red-600 hover:text-red-900 font-bold text-xs uppercase border border-red-200 px-3 py-1 rounded hover:bg-red-50">
+                                🗑️ Excluir
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}

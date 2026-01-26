@@ -57,8 +57,13 @@
                                 <span class="text-red-500">● Parado</span>
                             {% endif %}
                         </td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            <a href="/bots/deletar/{{ bot.id }}" onclick="return confirm('Tem certeza que deseja apagar este bot? As regras associadas podem parar de funcionar.')" 
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm flex gap-2">
+                            <a href="/bots/editar/{{ bot.id }}" 
+                               class="text-blue-600 hover:text-blue-900 font-bold text-xs uppercase border border-blue-200 px-3 py-1 rounded hover:bg-blue-50">
+                                ✏️ Editar
+                            </a>
+
+                            <a href="/bots/deletar/{{ bot.id }}" onclick="return confirm('Tem certeza?')" 
                                class="text-red-600 hover:text-red-900 font-bold text-xs uppercase border border-red-200 px-3 py-1 rounded hover:bg-red-50">
                                 🗑️ Excluir
                             </a>

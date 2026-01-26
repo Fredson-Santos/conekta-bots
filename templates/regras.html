@@ -44,20 +44,44 @@
                            class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-2 border">
                 </div>
 
-                <div class="col-span-1 md:col-span-2 bg-yellow-50 p-4 rounded border border-yellow-200">
-                    <h3 class="text-sm font-bold text-yellow-800 mb-2">✂️ Edição de Texto (Opcional)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700">Texto para remover (Regex)</label>
-                            <input type="text" name="filtro" placeholder="Ex: @canalantigo"
-                                   class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700">Texto novo</label>
-                            <input type="text" name="substituto" placeholder="Ex: @meucanal"
-                                   class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <div class="bg-yellow-50 p-4 rounded border border-yellow-200">
+                        <h3 class="text-sm font-bold text-yellow-800 mb-2">✂️ Substituição de Texto</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700">Texto para remover (Regex)</label>
+                                <input type="text" name="filtro" placeholder="Ex: @canalantigo"
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700">Texto novo</label>
+                                <input type="text" name="substituto" placeholder="Ex: @meucanal"
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                            </div>
                         </div>
                     </div>
+
+                    <div class="bg-green-50 p-4 rounded border border-green-200">
+                        <h3 class="text-sm font-bold text-green-800 mb-2">✅ Filtro Obrigatório (Whitelist)</h3>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700">Só enviar se conter (separe por vírgula):</label>
+                            <textarea name="somente_se_tiver" rows="3" placeholder="Ex: promoção, oferta, grátis"
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Se a mensagem NÃO tiver uma dessas palavras, ela será ignorada.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-50 p-4 rounded border border-red-200 md:col-span-2">
+                        <h3 class="text-sm font-bold text-red-800 mb-2">🚫 Bloquear Mensagem (Blacklist)</h3>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700">Não enviar se conter (separe por vírgula):</label>
+                            <input type="text" name="bloqueios" placeholder="Ex: aposta, cassino, http, tigrinho"
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Se a mensagem tiver qualquer uma dessas palavras, ela será descartada.</p>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="md:col-span-2">

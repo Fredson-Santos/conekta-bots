@@ -13,7 +13,9 @@ class Bot(SQLModel, table=True):
     tipo: str = Field(default="user")
     session_string: Optional[str] = None
     ativo: bool = Field(default=True)
+    
     regras: List["Regra"] = Relationship(back_populates="bot")
+    agendamentos: List["Agendamento"] = Relationship(back_populates="bot")
 
 # --- MODELO REGRA ---
 class Regra(SQLModel, table=True):
@@ -21,11 +23,31 @@ class Regra(SQLModel, table=True):
     nome: str
     origem: str
     destino: str
+    
+    # Filtros e Edições
+    filtro: Optional[str] = None
+    substituto: Optional[str] = None
+    bloqueios: Optional[str] = None         # Blacklist (Se tiver, NÃO envia)
+    somente_se_tiver: Optional[str] = None  # Whitelist (SÓ envia se tiver) <--- NOVO
+    
     bot_id: int = Field(foreign_key="bot.id")
     bot: Optional[Bot] = Relationship(back_populates="regras")
     ativo: bool = Field(default=True)
 
-# --- NOVO MODELO: LOG DE EXECUÇÃO (Isto faltava no seu arquivo) ---
+# --- MODELO AGENDAMENTO ---
+class Agendamento(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nome: str           
+    origem: str         
+    destino: str        
+    msg_id_atual: int   
+    tipo_envio: str     
+    horario: str        
+    bot_id: int = Field(foreign_key="bot.id")
+    bot: Optional[Bot] = Relationship(back_populates="agendamentos")
+    ativo: bool = Field(default=True)
+
+# --- MODELO LOG ---
 class LogExecucao(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     bot_id: int = Field(foreign_key="bot.id")
@@ -39,7 +61,6 @@ class LogExecucao(SQLModel, table=True):
 # --- CONFIGURAÇÃO ---
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
-
 engine = create_engine(sqlite_url)
 
 def create_db_and_tables():
@@ -47,4 +68,4 @@ def create_db_and_tables():
 
 if __name__ == "__main__":
     create_db_and_tables()
-    print("✅ Banco de dados atualizado com Logs!")
+    print("✅ Banco de dados atualizado!")

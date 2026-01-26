@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Regra - Conekta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-10">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-5 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-gray-800">✏️ Editar Regra</h1>
+            <a href="/regras" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">Cancelar</a>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <form action="/regras/editar/{{ regra.id }}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nome</label>
+                    <input type="text" name="nome" value="{{ regra.nome }}" required
+                           class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-2 border">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Bot</label>
+                    <select name="bot_id" class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-2 border">
+                        {% for bot in bots %}
+                        <option value="{{ bot.id }}" {% if bot.id == regra.bot_id %}selected{% endif %}>{{ bot.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Origem</label>
+                    <input type="text" name="origem" value="{{ regra.origem }}" required
+                           class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-2 border">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Destino</label>
+                    <input type="text" name="destino" value="{{ regra.destino }}" required
+                           class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-2 border">
+                </div>
+
+                <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <div class="bg-yellow-50 p-4 rounded border border-yellow-200">
+                        <h3 class="text-sm font-bold text-yellow-800 mb-2">✂️ Substituição</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700">Remover (Regex)</label>
+                                <input type="text" name="filtro" value="{{ regra.filtro or '' }}"
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700">Substituir por</label>
+                                <input type="text" name="substituto" value="{{ regra.substituto or '' }}"
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 p-4 rounded border border-green-200">
+                        <h3 class="text-sm font-bold text-green-800 mb-2">✅ Whitelist (Obrigatório)</h3>
+                        <textarea name="somente_se_tiver" rows="3"
+                                class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">{{ regra.somente_se_tiver or '' }}</textarea>
+                    </div>
+
+                    <div class="bg-red-50 p-4 rounded border border-red-200 md:col-span-2">
+                        <h3 class="text-sm font-bold text-red-800 mb-2">🚫 Blacklist (Bloqueio)</h3>
+                        <input type="text" name="bloqueios" value="{{ regra.bloqueios or '' }}"
+                                class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Salvar Regra
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

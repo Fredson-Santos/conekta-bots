@@ -1,0 +1,39 @@
+name: Deploy to Home Lab
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Permite executar manualmente
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to Docker Compose
+        run: |
+          chmod +x ./deploy.sh
+          ./deploy.sh
+      
+      - name: Verify deployment
+        run: |
+          echo "Verificando containers..."
+          docker compose ps
+          
+          # Verifica se os containers estão rodando
+          if ! docker compose ps | grep -q "conekta_web.*Up"; then
+            echo "❌ Container conekta_web não está rodando!"
+            docker compose logs web
+            exit 1
+          fi
+          
+          if ! docker compose ps | grep -q "conekta_manager.*Up"; then
+            echo "❌ Container conekta_manager não está rodando!"
+            docker compose logs manager
+            exit 1
+          fi
+          
+          echo "✅ Deploy concluído com sucesso!"

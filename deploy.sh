@@ -5,7 +5,7 @@ echo "🚀 Iniciando deploy..."
 
 # Para e remove containers atuais (incluindo órfãos)
 echo "⏹️  Parando e removendo containers antigos..."
-docker compose down --remove-orphans --volumes || true
+docker compose down --remove-orphans || true
 
 # Remove containers órfãos manualmente (fallback)
 echo "🧹 Limpando containers órfãos..."

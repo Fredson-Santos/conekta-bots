@@ -6,6 +6,11 @@ from worker import BotWorker
 async def main():
     print("🚀 INICIANDO SISTEMA CONEKTA BOTS...")
     
+    # Cria as tabelas se não existirem
+    from database import create_db_and_tables
+    create_db_and_tables()
+    print("✅ Banco de dados verificado/criado.")
+    
     # 1. Buscar bots ativos no banco
     workers = []
     with Session(engine) as session:

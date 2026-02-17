@@ -28,3 +28,4 @@ echo "📊 Status dos containers:"
 docker compose ps
 
 echo "✅ Deploy concluído!"
+

@@ -66,7 +66,3 @@ templates/               # Templates HTML (Jinja2)
 - O arquivo `populardb.py` pode ser usado para inserir dados de exemplo no banco.
 - Os templates HTML estão na pasta `templates/`.
 - O projeto é modular e pode ser expandido para novas funcionalidades.
-
----
-
-Desenvolvido por [Seu Nome].

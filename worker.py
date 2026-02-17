@@ -82,7 +82,15 @@ class BotWorker:
         for regra in regras:
             print(f"   🔎 Regra '{regra['nome']}' carregada. Whitelist: [{regra['somente_se_tiver']}]")
             
-            origem = self.processar_chat_id(regra['origem'])
+            # Processar origem: pode ser um único canal ou múltiplos separados por vírgula
+            origem_raw = regra['origem']
+            if ',' in str(origem_raw):
+                # Múltiplos canais: converter para lista
+                origem = [self.processar_chat_id(o.strip()) for o in str(origem_raw).split(',')]
+            else:
+                # Canal único
+                origem = self.processar_chat_id(origem_raw)
+            
             destino = self.processar_chat_id(regra['destino'])
             
             async def handler(event, d=destino, o=origem, r_nome=regra['nome'], 

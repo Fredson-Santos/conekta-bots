@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Database
+database.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Telegram Sessions
+*.session
+*.session-journal
+
+# Environment Variables
+.env
+.env.local
+
+# Sensitive Files
+populardb.py
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+*.log
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/

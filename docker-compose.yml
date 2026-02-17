@@ -7,7 +7,7 @@ services:
     volumes:
       - .:/app  # Monta a pasta atual para salvar o database.db no seu servidor real
     ports:
-      - "8000:8000"
+      - "5005:8000"
     environment:
       - TZ=America/Sao_Paulo # Define o fuso horário correto
     restart: always

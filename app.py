@@ -120,6 +120,25 @@ async def deletar_bot(id: int, session: Session = Depends(get_session)):
         session.commit()
     return RedirectResponse(url="/", status_code=303)
 
+@app.post("/bots/toggle/{id}")
+async def toggle_bot(request: Request, id: int, session: Session = Depends(get_session)):
+    """Toggle bot active status via HTMX"""
+    bot = session.get(Bot, id)
+    if bot:
+        # Inverte o status
+        bot.ativo = not bot.ativo
+        session.add(bot)
+        session.commit()
+        session.refresh(bot)
+        
+        # Retorna a linha atualizada da tabela (HTMX vai substituir)
+        return templates.TemplateResponse("bot_table_row.html", {
+            "request": request,
+            "bot": bot
+        })
+    
+    return HTMLResponse("<tr><td colspan='5' class='p-4 text-red-600'>Erro ao atualizar bot</td></tr>", status_code=404)
+
 @app.get("/bots/editar/{id}", response_class=HTMLResponse)
 async def form_editar_bot(request: Request, id: int, session: Session = Depends(get_session)):
     bot = session.get(Bot, id)
@@ -354,6 +373,95 @@ async def deletar_agendamento(id: int, session: Session = Depends(get_session)):
     item = session.get(Agendamento, id)
     if item: session.delete(item); session.commit()
     return RedirectResponse(url="/agendamentos", status_code=303)
+
+@app.post("/agendamentos/enviar/{id}")
+async def enviar_agora_agendamento(request: Request, id: int, session: Session = Depends(get_session)):
+    """Envia imediatamente a mensagem agendada (sem esperar horário)"""
+    ag = session.get(Agendamento, id)
+    
+    if not ag:
+        return HTMLResponse('<div class="text-red-600">Agendamento não encontrado</div>', status_code=404)
+    
+    # Buscar o bot associado
+    bot = session.get(Bot, ag.bot_id)
+    if not bot or not bot.ativo:
+        return HTMLResponse('<div class="text-yellow-600">⚠️ Bot inativo ou não encontrado</div>', status_code=400)
+    
+    try:
+        # Conectar Telethon temporariamente para enviar mensagem
+        from telethon import TelegramClient
+        from telethon.sessions import StringSession
+        
+        client = TelegramClient(StringSession(bot.session_string), bot.api_id, bot.api_hash)
+        await client.connect()
+        
+        # Se for bot API, autenticar com token
+        if bot.tipo == "bot" and bot.bot_token:
+            await client.start(bot_token=bot.bot_token)
+        elif not await client.is_user_authorized():
+            await client.disconnect()
+            return HTMLResponse('<div class="text-red-600">❌ Bot não autorizado</div>', status_code=400)
+        
+        # Enviar mensagem (buscar e reenviar sem autor original)
+        print(f"[DEBUG] Buscando mensagem ID {ag.msg_id_atual} de {ag.origem}")
+        original_msg = await client.get_messages(ag.origem, ids=ag.msg_id_atual)
+        
+        print(f"[DEBUG] Mensagem encontrada: {original_msg}")
+        
+        if not original_msg or (not original_msg.message and not original_msg.media):
+            await client.disconnect()
+            return HTMLResponse('<div class="text-red-600">❌ Mensagem original não encontrada ou vazia</div>', status_code=404)
+        
+        # Reenviar como nova mensagem (remove o nome do autor)
+        # Em Telethon, 'message' contém o texto (seja text ou caption)
+        msg_text = original_msg.message or ""
+        
+        print(f"[DEBUG] Enviando para {ag.destino}: texto='{msg_text[:50] if msg_text else 'SEM TEXTO'}...', tem_media={bool(original_msg.media)}")
+        
+        await client.send_message(
+            entity=ag.destino,
+            message=msg_text if msg_text else None,
+            file=original_msg.media if original_msg.media else None
+        )
+        
+        print(f"[DEBUG] Mensagem enviada com sucesso!")
+        
+        # Se for sequencial, incrementar o ID
+        if ag.tipo_envio == "sequencial":
+            ag.msg_id_atual += 1
+            session.add(ag)
+            session.commit()
+        
+        await client.disconnect()
+        
+        # Retornar mensagem de sucesso
+        return HTMLResponse(
+            f'<div class="text-green-600 font-bold p-2 bg-green-50 rounded">✅ Mensagem ID {ag.msg_id_atual - 1 if ag.tipo_envio == "sequencial" else ag.msg_id_atual} enviada com sucesso!</div>'
+        )
+        
+    except Exception as e:
+        print(f"[ERRO] Exceção ao enviar mensagem: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Tratamento específico para FloodWaitError
+        error_message = str(e)
+        if "FloodWait" in type(e).__name__ or "wait of" in error_message.lower():
+            # Extrair tempo de espera se possível
+            import re
+            wait_match = re.search(r'(\d+)\s*second', error_message)
+            wait_time = int(wait_match.group(1)) if wait_match else 0
+            wait_minutes = wait_time // 60
+            
+            return HTMLResponse(
+                f'<div class="text-orange-600 p-2 bg-orange-50 rounded">⏳ Telegram bloqueou temporariamente (muitas requisições). Aguarde {wait_minutes} minutos e tente novamente.</div>',
+                status_code=429
+            )
+        
+        return HTMLResponse(
+            f'<div class="text-red-600 p-2 bg-red-50 rounded">❌ Erro: {str(e)}</div>',
+            status_code=500
+        )
 
 # --- BLOQUEIOS ---
 

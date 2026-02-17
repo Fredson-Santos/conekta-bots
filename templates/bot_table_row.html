@@ -1,0 +1,35 @@
+<tr>
+    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">#{{ bot.id }}</td>
+    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm font-bold text-gray-900">{{ bot.nome }}</td>
+    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+        <span class="relative inline-block px-3 py-1 font-semibold leading-tight">
+            <span aria-hidden
+                class="absolute inset-0 opacity-50 rounded-full {% if bot.tipo == 'user' %}bg-blue-200{% else %}bg-purple-200{% endif %}"></span>
+            <span class="relative text-xs">{{ bot.tipo|upper }}</span>
+        </span>
+    </td>
+    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+        {% if bot.ativo %}
+        <span class="text-green-600 font-bold">● Ativo</span>
+        {% else %}
+        <span class="text-red-500">● Parado</span>
+        {% endif %}
+    </td>
+    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm flex gap-2">
+        <!-- Botão Toggle -->
+        <button hx-post="/bots/toggle/{{ bot.id }}" hx-swap="outerHTML" hx-target="closest tr"
+            class="{% if bot.ativo %}bg-yellow-500 hover:bg-yellow-600{% else %}bg-green-500 hover:bg-green-600{% endif %} text-white font-bold text-xs uppercase px-3 py-1 rounded transition shadow-sm">
+            {% if bot.ativo %}⏸ Pausar{% else %}▶ Ativar{% endif %}
+        </button>
+
+        <a href="/bots/editar/{{ bot.id }}"
+            class="text-blue-600 hover:text-blue-900 font-bold text-xs uppercase border border-blue-200 px-3 py-1 rounded hover:bg-blue-50">
+            ✏️ Editar
+        </a>
+
+        <a href="/bots/deletar/{{ bot.id }}" onclick="return confirm('Tem certeza?')"
+            class="text-red-600 hover:text-red-900 font-bold text-xs uppercase border border-red-200 px-3 py-1 rounded hover:bg-red-50">
+            🗑️ Excluir
+        </a>
+    </td>
+</tr>

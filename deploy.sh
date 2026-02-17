@@ -3,9 +3,13 @@ set -e  # Para o script se algum comando falhar
 
 echo "🚀 Iniciando deploy..."
 
-# Para os containers atuais
-echo "⏹️  Parando containers..."
-docker compose down
+# Para e remove containers atuais (incluindo órfãos)
+echo "⏹️  Parando e removendo containers antigos..."
+docker compose down --remove-orphans --volumes || true
+
+# Remove containers órfãos manualmente (fallback)
+echo "🧹 Limpando containers órfãos..."
+docker rm -f conekta_web conekta_manager 2>/dev/null || true
 
 # Rebuild das imagens (força reconstrução para pegar código novo)
 echo "🔨 Reconstruindo imagens..."

@@ -77,3 +77,5 @@ Isso sobe dois serviços:
 ## Observações
 - Os templates HTML estão na pasta `templates/`.
 - O projeto é modular e pode ser expandido para novas funcionalidades.
+
+## 🚀 Teste de Runner

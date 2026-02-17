@@ -1,28 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <title>Novo Bot - Conekta</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script>
         function toggleTipo() {
             const tipo = document.getElementById('tipoSelect').value;
-            const divToken = document.getElementById('divToken');
-            const divSession = document.getElementById('divSession');
-            const divPhone = document.getElementById('divPhone');
+            const divBotAPI = document.getElementById('divBotAPI');
+            const divUserSession = document.getElementById('divUserSession');
+            const divUserPhone = document.getElementById('divUserPhone');
 
+            // Esconder todos
+            divBotAPI.classList.add('hidden');
+            divUserSession.classList.add('hidden');
+            divUserPhone.classList.add('hidden');
+
+            // Mostrar apropriado
             if (tipo === 'bot') {
-                divToken.classList.remove('hidden');
-                divSession.classList.add('hidden');
-                divPhone.classList.add('hidden');
-            } else {
-                divToken.classList.add('hidden');
-                divSession.classList.remove('hidden');
-                divPhone.classList.remove('hidden');
+                divBotAPI.classList.remove('hidden');
+            } else if (tipo === 'user_session') {
+                divUserSession.classList.remove('hidden');
+            } else if (tipo === 'user_phone') {
+                divUserPhone.classList.remove('hidden');
             }
         }
     </script>
 </head>
+
 <body class="bg-gray-100 p-10">
     <div class="max-w-2xl mx-auto">
         <div class="mb-5 flex justify-between items-center">
@@ -31,66 +38,168 @@
         </div>
 
         <div class="bg-white p-8 rounded-lg shadow-md">
-            <form action="/bots/criar" method="post" class="space-y-6">
-                
-                <div class="grid grid-cols-2 gap-4">
+
+            <!-- Seletor de Tipo -->
+            <div class="mb-6 p-4 bg-gray-50 rounded border border-gray-200">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Tipo de Autenticação</label>
+                <select id="tipoSelect" onchange="toggleTipo()"
+                    class="mt-1 block w-full rounded border-gray-300 bg-white p-3 border shadow-sm text-base">
+                    <option value="bot">🤖 Bot API (com Token do BotFather)</option>
+                    <option value="user_session">👤 Userbot (com Session String)</option>
+                    <option value="user_phone">📱 Userbot (com Telefone - Recomendado)</option>
+                </select>
+            </div>
+
+            <!-- Formulário Bot API -->
+            <div id="divBotAPI">
+                <form action="/bots/criar" method="post" class="space-y-6">
+                    <input type="hidden" name="tipo" value="bot">
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Nome do Bot (Apelido)</label>
                         <input type="text" name="nome" placeholder="Ex: Atendente 01" required
-                               class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-2 border">
+                            class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-3 border">
                     </div>
+
+                    <div class="bg-blue-50 p-4 rounded border border-blue-100">
+                        <h3 class="text-sm font-bold text-blue-800 mb-3">Credenciais do Telegram (my.telegram.org)</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700">API ID</label>
+                                <input type="text" name="api_id" required placeholder="Ex: 123456"
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700">API Hash</label>
+                                <input type="text" name="api_hash" required placeholder="Ex: a1b2c3..."
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Tipo de Conexão</label>
-                        <select id="tipoSelect" name="tipo" onchange="toggleTipo()"
-                                class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-2 border">
-                            <option value="bot">🤖 Bot API (Token)</option>
-                            <option value="user">👤 Userbot (Conta Real)</option>
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700">Bot Token (BotFather)</label>
+                        <input type="text" name="bot_token" required placeholder="Ex: 123456:ABC-def..."
+                            class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-3 border">
                     </div>
-                </div>
 
-                <div class="bg-blue-50 p-4 rounded border border-blue-100">
-                    <h3 class="text-sm font-bold text-blue-800 mb-2">Credenciais do Telegram (my.telegram.org)</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700">API ID</label>
-                            <input type="text" name="api_id" required placeholder="Ex: 123456"
-                                   class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700">API Hash</label>
-                            <input type="text" name="api_hash" required placeholder="Ex: a1b2c3..."
-                                   class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                    <button type="submit"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded transition shadow-md">
+                        💾 Salvar Bot
+                    </button>
+                </form>
+            </div>
+
+            <!-- Formulário Userbot com Session String -->
+            <div id="divUserSession" class="hidden">
+                <form action="/bots/criar" method="post" class="space-y-6">
+                    <input type="hidden" name="tipo" value="user">
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nome do Bot (Apelido)</label>
+                        <input type="text" name="nome" placeholder="Ex: Minha Conta" required
+                            class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-3 border">
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded border border-blue-100">
+                        <h3 class="text-sm font-bold text-blue-800 mb-3">Credenciais do Telegram (my.telegram.org)</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700">API ID</label>
+                                <input type="text" name="api_id" required placeholder="Ex: 123456"
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700">API Hash</label>
+                                <input type="text" name="api_hash" required placeholder="Ex: a1b2c3..."
+                                    class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="divToken">
-                    <label class="block text-sm font-medium text-gray-700">Bot Token (BotFather)</label>
-                    <input type="text" name="bot_token" placeholder="Ex: 123456:ABC-def..."
-                           class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-2 border">
-                </div>
+                    <div class="bg-yellow-50 p-4 rounded border border-yellow-200">
+                        <label class="block text-sm font-bold text-yellow-800">String Session</label>
+                        <textarea name="session_string" rows="3" required
+                            placeholder="Cole a string longa gerada pelo script aqui..."
+                            class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-xs font-mono"></textarea>
+                        <p class="text-xs text-gray-500 mt-2">
+                            ⚠️ Gere usando: <code class="bg-gray-200 px-1 rounded">python adicionar_bot.py</code>
+                        </p>
+                    </div>
 
-                <div id="divPhone" class="hidden">
-                    <label class="block text-sm font-medium text-gray-700">Telefone</label>
-                    <input type="text" name="phone" placeholder="+5511999999999"
-                           class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-2 border">
-                </div>
-                
-                <div id="divSession" class="hidden bg-yellow-50 p-4 rounded border border-yellow-200">
-                    <label class="block text-sm font-bold text-yellow-800">String Session</label>
-                    <textarea name="session_string" rows="3" placeholder="Cole a string longa gerada pelo script aqui..."
-                              class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-xs font-mono"></textarea>
-                    <p class="text-xs text-gray-500 mt-2">
-                        ⚠️ Para Userbots, recomendamos gerar a sessão via terminal (`python adicionar_bot.py`) e colar aqui, ou usar o script diretamente. O login via web é complexo.
-                    </p>
-                </div>
+                    <button type="submit"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded transition shadow-md">
+                        💾 Salvar Bot
+                    </button>
+                </form>
+            </div>
 
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded transition">
-                    💾 Salvar Bot
-                </button>
-            </form>
+            <!-- Formulário Userbot com Telefone (HTMX) -->
+            <div id="divUserPhone" class="hidden">
+                <div class="space-y-6">
+
+                    <!-- Step 1: Dados iniciais -->
+                    <div id="step1-container">
+                        <form hx-post="/bots/auth/start" hx-swap="innerHTML" hx-target="#step2-container"
+                            hx-indicator="#loading-step1" class="space-y-6">
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nome do Bot (Apelido)</label>
+                                <input type="text" name="nome" placeholder="Ex: Minha Conta" required
+                                    class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-3 border shadow-sm">
+                            </div>
+
+                            <div class="bg-blue-50 p-4 rounded border border-blue-100">
+                                <h3 class="text-sm font-bold text-blue-800 mb-3">Credenciais do Telegram
+                                    (my.telegram.org)</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700">API ID</label>
+                                        <input type="text" name="api_id" required placeholder="Ex: 123456"
+                                            class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700">API Hash</label>
+                                        <input type="text" name="api_hash" required placeholder="Ex: a1b2c3..."
+                                            class="mt-1 block w-full rounded border-gray-300 bg-white p-2 border text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Telefone</label>
+                                <input type="text" name="phone" required placeholder="+5511999999999"
+                                    class="mt-1 block w-full rounded border-gray-300 bg-gray-50 p-3 border shadow-sm">
+                                <p class="text-xs text-gray-500 mt-1">Formato internacional com + e código do país</p>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <button type="submit"
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition shadow-md">
+                                    📨 Enviar Código
+                                </button>
+                                <div id="loading-step1" class="htmx-indicator">
+                                    <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Step 2: Verificação de código (será preenchido via HTMX) -->
+                    <div id="step2-container"></div>
+
+                </div>
+            </div>
+
         </div>
     </div>
 </body>
+
 </html>

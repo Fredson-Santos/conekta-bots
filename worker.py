@@ -13,6 +13,8 @@ class BotWorker:
         self.nome = db_bot.nome
         self.api_id = db_bot.api_id
         self.api_hash = db_bot.api_hash
+        self.tipo = db_bot.tipo
+        self.bot_token = db_bot.bot_token
         self.session_string = db_bot.session_string
         self.client = None
         self.fila_envio = asyncio.Queue()
@@ -195,11 +197,18 @@ class BotWorker:
         try:
             self.client = TelegramClient(StringSession(self.session_string), self.api_id, self.api_hash)
             await self.client.connect()
-            if not await self.client.is_user_authorized():
+            
+            # Autenticar baseado no tipo
+            if self.tipo == "bot" and self.bot_token:
+                # Bot API: usar token
+                await self.client.start(bot_token=self.bot_token)
+            elif not await self.client.is_user_authorized():
+                # UserBot: verificar autorização da session
                 print(f"❌ {self.nome} não autorizado!")
                 return
+            
             me = await self.client.get_me()
-            print(f"✅ {self.nome} conectado (@{me.username})")
+            print(f"✅ {self.nome} conectado (@{me.username or me.id})")
             
             asyncio.create_task(self.monitorar_regras_loop())
             asyncio.create_task(self.loop_processamento_fila())

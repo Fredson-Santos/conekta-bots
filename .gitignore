@@ -12,6 +12,7 @@ ENV/
 .venv
 
 # Database
+data/
 database.db
 *.db
 *.sqlite

@@ -58,8 +58,14 @@ class LogExecucao(SQLModel, table=True):
     mensagem: str
     data_hora: datetime = Field(default_factory=datetime.now)
 
+
 # --- CONFIGURAÇÃO ---
-sqlite_file_name = "database.db"
+import os
+
+# Criar diretório data se não existir
+os.makedirs("data", exist_ok=True)
+
+sqlite_file_name = "data/database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 engine = create_engine(sqlite_url)
 

@@ -1,10 +1,13 @@
 # ConektaBots
 
+> ⚠️ **Este projeto está em fase MVP (Produto Mínimo Viável) e em construção ativa.** Funcionalidades podem mudar e novas features estão sendo desenvolvidas.
+
 ConektaBots é uma plataforma para gerenciamento e automação de bots do Telegram, com interface web para administração de bots, regras de encaminhamento, agendamentos e monitoramento de execuções.
 
 ## Funcionalidades
 - Cadastro e gerenciamento de múltiplos bots do Telegram (userbot ou bot API)
 - Criação de regras de encaminhamento entre canais/grupos
+- Filtros avançados com Regex (blacklist e whitelist)
 - Agendamento de tarefas
 - Logs de execução e monitoramento
 - Interface web com FastAPI e Jinja2
@@ -16,10 +19,8 @@ adicionar_regra.py       # Script CLI para adicionar regras de encaminhamento
 app.py                   # API e interface web (FastAPI)
 database.py              # Modelos e conexão com banco de dados (SQLModel)
 manager.py               # Gerenciador principal: inicia todos os bots ativos
-populardb.py             # Script para popular o banco com dados de exemplo
 worker.py                # Worker assíncrono que executa os bots e regras
 requirements.txt         # Dependências do projeto
-bots/                    # (Pasta reservada para arquivos de bots)
 templates/               # Templates HTML (Jinja2)
 ```
 
@@ -55,14 +56,24 @@ templates/               # Templates HTML (Jinja2)
    ```
    Acesse: http://localhost:8000
 
+## Deploy com Docker
+
+```bash
+docker-compose up -d --build
+```
+
+Isso sobe dois serviços:
+- **web** — Painel de administração na porta `8000`
+- **manager** — Gerenciador que executa os bots
+
 ## Principais Tecnologias
 - Python 3.10+
 - FastAPI
 - SQLModel
 - Telethon
 - Jinja2
+- Docker
 
 ## Observações
-- O arquivo `populardb.py` pode ser usado para inserir dados de exemplo no banco.
 - Os templates HTML estão na pasta `templates/`.
 - O projeto é modular e pode ser expandido para novas funcionalidades.

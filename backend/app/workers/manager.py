@@ -12,10 +12,24 @@ from app.workers.bot_worker import BotWorker
 from app.workers.scheduler_worker import SchedulerWorker
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(name)-25s | %(levelname)-5s | %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.WARNING,
+    format="%(asctime)s | %(levelname)-5s | %(message)s",
+    datefmt="%H:%M:%S",
 )
+
+# Nossos loggers: INFO para ver envio de mensagens e eventos importantes
+for _name in ("conekta-bots.manager", "conekta-bots.worker", "conekta-bots.scheduler", "conekta-bots.shopee"):
+    logging.getLogger(_name).setLevel(logging.INFO)
+
+# Silencia libs externas (SQLAlchemy, Telethon)
+for _name in ("sqlalchemy", "sqlalchemy.engine", "sqlalchemy.engine.Engine",
+              "sqlalchemy.pool", "sqlalchemy.dialects", "sqlalchemy.orm",
+              "telethon", "telethon.network"):
+    _lg = logging.getLogger(_name)
+    _lg.setLevel(logging.WARNING)
+    _lg.handlers.clear()  # Remove handlers criados pelo echo do SQLAlchemy
+    _lg.propagate = False
+
 logger = logging.getLogger("conekta-bots.manager")
 
 

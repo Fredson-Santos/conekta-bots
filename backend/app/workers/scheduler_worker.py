@@ -32,7 +32,7 @@ class SchedulerWorker:
 
     async def start(self) -> None:
         """Conecta o client e inicia o loop de verificação."""
-        logger.info("Scheduler iniciado: %s (id=%d)", self.bot_nome, self.bot_id)
+        logger.debug("Scheduler iniciado: %s (id=%d)", self.bot_nome, self.bot_id)
         await self.client.connect()
 
         if not await self.client.is_user_authorized():
@@ -104,7 +104,7 @@ class SchedulerWorker:
                 db.commit()
 
             logger.info(
-                "[%s] Agendamento '%s' executado: %s → %s",
+                "⏰ [%s] Agendamento '%s': %s → %s",
                 self.bot_nome, agendamento.nome,
                 agendamento.origem, agendamento.destino,
             )

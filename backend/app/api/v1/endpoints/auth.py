@@ -1,6 +1,7 @@
 """Endpoints de autenticação: registro, login, refresh."""
 
 from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -20,6 +21,18 @@ async def register(data: UserCreate, db: Session = Depends(get_db)):
     except ValueError as e:
         raise ConflictException(detail=str(e))
     return user
+
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    """Endpoint compatível com OAuth2 (Swagger UI)."""
+    user = AuthService.authenticate(db, form_data.username, form_data.password)
+    if not user:
+        raise UnauthorizedException(detail="Email ou senha incorretos")
+    return AuthService.create_tokens(user.id)
 
 
 @router.post("/login", response_model=Token)

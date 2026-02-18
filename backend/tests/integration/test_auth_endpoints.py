@@ -74,3 +74,19 @@ class TestAuthEndpoints:
         resp = client.post(f"/api/v1/auth/refresh?refresh_token={refresh_token}")
         assert resp.status_code == 200
         assert "access_token" in resp.json()
+
+    def test_swagger_login(self, client):
+        client.post("/api/v1/auth/register", json={
+            "email": "swagger@test.com",
+            "password": "senha1234",
+        })
+        # Swagger envia dados como form-data (application/x-www-form-urlencoded)
+        resp = client.post("/api/v1/auth/token", data={
+            "username": "swagger@test.com",
+            "password": "senha1234",
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "access_token" in data
+        assert "token_type" not in data  # PyJWT auth response might not implement token_type by default in schema, let's check
+

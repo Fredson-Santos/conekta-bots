@@ -30,6 +30,14 @@ class SchedulerWorker:
         )
         self._running = False
 
+    @staticmethod
+    def _processar_chat_id(chat_id: str):
+        """Converte ID numérico para int; mantém string caso contrário ('me', '@canal')."""
+        try:
+            return int(chat_id)
+        except (ValueError, TypeError):
+            return chat_id
+
     async def start(self) -> None:
         """Conecta o client e inicia o loop de verificação."""
         logger.debug("Scheduler iniciado: %s (id=%d)", self.bot_nome, self.bot_id)
@@ -73,9 +81,12 @@ class SchedulerWorker:
     async def _executar_agendamento(self, db, agendamento) -> None:
         """Executa um agendamento: busca mensagem na origem e envia ao destino."""
         try:
+            origem = self._processar_chat_id(agendamento.origem)
+            destino = self._processar_chat_id(agendamento.destino)
+
             # Busca mensagem pelo ID na origem
             mensagem = await self.client.get_messages(
-                agendamento.origem, ids=agendamento.msg_id_atual
+                origem, ids=agendamento.msg_id_atual
             )
 
             if not mensagem:
@@ -86,7 +97,7 @@ class SchedulerWorker:
                 return
 
             texto = mensagem.text or ""
-            await self.client.send_message(agendamento.destino, texto)
+            await self.client.send_message(destino, texto)
 
             LogService.create(
                 db,

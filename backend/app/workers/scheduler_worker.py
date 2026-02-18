@@ -57,10 +57,12 @@ class SchedulerWorker:
         logger.info("Scheduler parado: %s", self.bot_nome)
 
     async def _loop_verificacao(self) -> None:
-        """Loop principal: verifica agendamentos a cada 30 segundos."""
+        """Loop principal: verifica agendamentos 1x por minuto (no início de cada minuto)."""
         while self._running:
             await self._verificar_agendamentos()
-            await asyncio.sleep(30)
+            # Espera até o próximo minuto para evitar envio duplicado
+            segundos_restantes = 60 - datetime.now().second
+            await asyncio.sleep(segundos_restantes)
 
     async def _verificar_agendamentos(self) -> None:
         """Carrega agendamentos ativos e executa os que batem com o horário atual."""

@@ -1,12 +1,24 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.models.bot import Bot
 from app.models.schedule import Agendamento
 from app.schemas.schedule import ScheduleCreate, ScheduleUpdate
 
 
 class ScheduleService:
     """Service para operações de CRUD de Agendamentos."""
+
+    @staticmethod
+    def get_all_by_owner(db: Session, owner_id: int) -> list[Agendamento]:
+        """Retorna todos os agendamentos dos bots do usuário."""
+        stmt = (
+            select(Agendamento)
+            .join(Bot, Agendamento.bot_id == Bot.id)
+            .where(Bot.owner_id == owner_id)
+            .order_by(Agendamento.id)
+        )
+        return list(db.execute(stmt).scalars().all())
 
     @staticmethod
     def get_by_id(db: Session, schedule_id: int, bot_id: int) -> Agendamento | None:

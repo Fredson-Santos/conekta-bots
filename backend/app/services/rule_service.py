@@ -1,12 +1,24 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.models.bot import Bot
 from app.models.rule import Regra
 from app.schemas.rule import RuleCreate, RuleUpdate
 
 
 class RuleService:
     """Service para operações de CRUD de Regras."""
+
+    @staticmethod
+    def get_all_by_owner(db: Session, owner_id: int) -> list[Regra]:
+        """Retorna todas as regras dos bots do usuário."""
+        stmt = (
+            select(Regra)
+            .join(Bot, Regra.bot_id == Bot.id)
+            .where(Bot.owner_id == owner_id)
+            .order_by(Regra.id)
+        )
+        return list(db.execute(stmt).scalars().all())
 
     @staticmethod
     def get_by_id(db: Session, rule_id: int, bot_id: int) -> Regra | None:

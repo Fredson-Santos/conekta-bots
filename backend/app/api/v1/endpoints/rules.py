@@ -29,6 +29,15 @@ def _get_rule_or_404(db: Session, rule_id: int, bot_id: int):
     return regra
 
 
+@router.get("/", response_model=list[RuleResponse])
+async def list_all_rules(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Lista todas as regras de todos os bots do usuário."""
+    return RuleService.get_all_by_owner(db, current_user.id)
+
+
 @router.get("/bot/{bot_id}", response_model=list[RuleResponse])
 async def list_rules(
     bot_id: int,

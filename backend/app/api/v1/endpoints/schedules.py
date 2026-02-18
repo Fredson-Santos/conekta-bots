@@ -29,6 +29,15 @@ def _get_schedule_or_404(db: Session, schedule_id: int, bot_id: int):
     return agendamento
 
 
+@router.get("/", response_model=list[ScheduleResponse])
+async def list_all_schedules(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Lista todos os agendamentos de todos os bots do usuário."""
+    return ScheduleService.get_all_by_owner(db, current_user.id)
+
+
 @router.get("/bot/{bot_id}", response_model=list[ScheduleResponse])
 async def list_schedules(
     bot_id: int,

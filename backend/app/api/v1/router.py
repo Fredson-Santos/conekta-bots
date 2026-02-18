@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import analytics, auth, bots, rules, schedules
+from app.api.v1.endpoints import analytics, auth, bots, rules, schedules, settings
 
 router = APIRouter()
 
@@ -11,3 +11,4 @@ router.include_router(bots.router)
 router.include_router(rules.router)
 router.include_router(schedules.router)
 router.include_router(analytics.router)
+router.include_router(settings.router)

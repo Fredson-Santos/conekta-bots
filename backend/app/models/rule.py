@@ -19,6 +19,7 @@ class Regra(Base):
     somente_se_tiver: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
+    converter_shopee: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Foreign key
     bot_id: Mapped[int] = mapped_column(ForeignKey("bot.id"))

@@ -10,6 +10,7 @@ class RuleCreate(BaseModel):
     substituto: str | None = None
     bloqueios: str | None = None
     somente_se_tiver: str | None = None
+    converter_shopee: bool = False
 
 
 class RuleUpdate(BaseModel):
@@ -21,6 +22,7 @@ class RuleUpdate(BaseModel):
     substituto: str | None = None
     bloqueios: str | None = None
     somente_se_tiver: str | None = None
+    converter_shopee: bool | None = None
 
 
 class RuleResponse(BaseModel):
@@ -35,4 +37,5 @@ class RuleResponse(BaseModel):
     substituto: str | None = None
     bloqueios: str | None = None
     somente_se_tiver: str | None = None
+    converter_shopee: bool = False
     ativo: bool

@@ -21,3 +21,6 @@ class User(Base):
     bots: Mapped[list["Bot"]] = relationship(
         back_populates="owner", cascade="all, delete-orphan"
     )
+    configuracao: Mapped["Configuracao | None"] = relationship(
+        back_populates="owner", cascade="all, delete-orphan", uselist=False
+    )

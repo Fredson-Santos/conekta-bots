@@ -97,7 +97,8 @@ class SchedulerWorker:
                 return
 
             texto = mensagem.text or ""
-            await self.client.send_message(destino, texto)
+            # Envia o objeto Message completo (preserva mídia/formatação)
+            await self.client.send_message(destino, mensagem)
 
             LogService.create(
                 db,

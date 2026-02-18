@@ -5,7 +5,7 @@ export interface BotCreate {
     nome: string;
     api_id: string;
     api_hash: string;
-    phone: string;
+    phone?: string;
     tipo: string;
     bot_token?: string;
     session_string?: string;
@@ -16,25 +16,38 @@ export interface BotUpdate {
     ativo?: boolean;
 }
 
+export interface BotAuthStart {
+    nome: string;
+    api_id: string;
+    api_hash: string;
+    phone: string;
+}
+
+export interface BotAuthVerify {
+    auth_id: string;
+    code: string;
+    password?: string;
+}
+
 export const botService = {
     getAll: async (): Promise<Bot[]> => {
-        const response = await api.get<Bot[]>("/bots/");
-        return response.data;
+        const { data } = await api.get<Bot[]>("/bots/");
+        return data;
     },
 
     getById: async (id: number): Promise<Bot> => {
-        const response = await api.get<Bot>(`/bots/${id}`);
-        return response.data;
+        const { data } = await api.get<Bot>(`/bots/${id}`);
+        return data;
     },
 
-    create: async (data: BotCreate): Promise<Bot> => {
-        const response = await api.post<Bot>("/bots/", data);
-        return response.data;
+    create: async (payload: BotCreate): Promise<Bot> => {
+        const { data } = await api.post<Bot>("/bots/", payload);
+        return data;
     },
 
-    update: async (id: number, data: BotUpdate): Promise<Bot> => {
-        const response = await api.put<Bot>(`/bots/${id}`, data);
-        return response.data;
+    update: async (id: number, payload: BotUpdate): Promise<Bot> => {
+        const { data } = await api.patch<Bot>(`/bots/${id}`, payload);
+        return data;
     },
 
     delete: async (id: number): Promise<void> => {
@@ -42,20 +55,17 @@ export const botService = {
     },
 
     toggle: async (id: number): Promise<Bot> => {
-        const response = await api.post<Bot>(`/bots/${id}/toggle`);
-        return response.data;
+        const { data } = await api.patch<Bot>(`/bots/${id}/toggle`);
+        return data;
     },
 
-    startAuth: async (id: number): Promise<{ auth_id: string; message: string }> => {
-        const response = await api.post<{ auth_id: string; message: string }>(`/bots/${id}/auth/start`);
-        return response.data;
+    startAuth: async (payload: BotAuthStart): Promise<{ auth_id: string; message: string }> => {
+        const { data } = await api.post<{ auth_id: string; message: string }>("/bots/auth/start", payload);
+        return data;
     },
 
-    verifyAuth: async (id: number, code: string, password?: string): Promise<Bot> => {
-        const response = await api.post<Bot>(`/bots/${id}/auth/verify`, {
-            code,
-            password
-        });
-        return response.data;
-    }
+    verifyAuth: async (payload: BotAuthVerify): Promise<Bot> => {
+        const { data } = await api.post<Bot>("/bots/auth/verify", payload);
+        return data;
+    },
 };

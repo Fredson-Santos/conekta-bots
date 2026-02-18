@@ -1,45 +1,44 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ruleService } from "@/services/ruleService";
-import type { RuleUpdate } from "@/services/ruleService";
+import type { RuleCreate } from "@/services/ruleService";
 
-export const useRules = () => {
+export function useRules() {
     const queryClient = useQueryClient();
 
-    const rulesQuery = useQuery({
+    const { data: rules, isLoading } = useQuery({
         queryKey: ["rules"],
         queryFn: ruleService.getAll,
     });
 
-    const createRuleMutation = useMutation({
-        mutationFn: ruleService.create,
+    const { mutate: createRule, isPending: isCreating } = useMutation({
+        mutationFn: (data: RuleCreate) => ruleService.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["rules"] });
         },
     });
 
-    const updateRuleMutation = useMutation({
-        mutationFn: ({ id, data }: { id: number; data: RuleUpdate }) =>
-            ruleService.update(id, data),
+    const { mutate: deleteRule } = useMutation({
+        mutationFn: ({ ruleId, botId }: { ruleId: number; botId: number }) =>
+            ruleService.delete(ruleId, botId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["rules"] });
         },
     });
 
-    const deleteRuleMutation = useMutation({
-        mutationFn: ruleService.delete,
+    const { mutate: toggleRule } = useMutation({
+        mutationFn: ({ ruleId, botId }: { ruleId: number; botId: number }) =>
+            ruleService.toggle(ruleId, botId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["rules"] });
         },
     });
 
     return {
-        rules: rulesQuery.data,
-        isLoading: rulesQuery.isLoading,
-        isError: rulesQuery.isError,
-        error: rulesQuery.error,
-        createRule: createRuleMutation.mutate,
-        updateRule: updateRuleMutation.mutate,
-        deleteRule: deleteRuleMutation.mutate,
-        isCreating: createRuleMutation.isPending,
+        rules,
+        isLoading,
+        createRule,
+        isCreating,
+        deleteRule,
+        toggleRule,
     };
-};
+}

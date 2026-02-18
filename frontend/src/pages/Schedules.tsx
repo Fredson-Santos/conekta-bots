@@ -1,89 +1,119 @@
 import { useState } from "react";
+import { useBots } from "@/hooks/useBots";
 import { useSchedules } from "@/hooks/useSchedules";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Calendar, Trash2 } from "lucide-react";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScheduleForm } from "@/components/features/schedules/ScheduleForm";
+import { Plus, Trash2, Pause, Play, ArrowRight, Clock } from "lucide-react";
 
 export function Schedules() {
-    const { schedules, isLoading, deleteSchedule } = useSchedules();
-    const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-    if (isLoading) {
-        return <div className="p-8">Carregando agendamentos...</div>;
-    }
+    const { bots } = useBots();
+    const { schedules, createSchedule, deleteSchedule, toggleSchedule, isCreating } = useSchedules();
+    const [open, setOpen] = useState(false);
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Agendamentos</h2>
+                    <h1 className="text-3xl font-bold tracking-tight">📅 Agendamentos</h1>
                     <p className="text-muted-foreground">
-                        Envie mensagens automáticas em horários específicos.
+                        Gerencie o agendamento de postagens automáticas
                     </p>
                 </div>
-
-                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <Sheet open={open} onOpenChange={setOpen}>
                     <SheetTrigger asChild>
                         <Button>
                             <Plus className="mr-2 h-4 w-4" />
                             Novo Agendamento
                         </Button>
                     </SheetTrigger>
-                    <SheetContent>
+                    <SheetContent className="sm:max-w-lg overflow-y-auto">
                         <SheetHeader>
-                            <SheetTitle>Criar Agendamento</SheetTitle>
-                            <SheetDescription>
-                                Configure a mensagem e o horário.
-                            </SheetDescription>
+                            <SheetTitle>Novo Agendamento</SheetTitle>
                         </SheetHeader>
-                        <ScheduleForm onSuccess={() => setIsSheetOpen(false)} />
+                        <div className="mt-4">
+                            <ScheduleForm
+                                bots={bots || []}
+                                onSubmit={(data) => {
+                                    createSchedule(data, {
+                                        onSuccess: () => setOpen(false),
+                                    });
+                                }}
+                                isLoading={isCreating}
+                            />
+                        </div>
                     </SheetContent>
                 </Sheet>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4">
                 {schedules?.map((schedule) => (
-                    <Card key={schedule.id}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                {schedule.cron_expr}
-                            </CardTitle>
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Card key={schedule.id} className={!schedule.ativo ? "opacity-60" : ""}>
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-blue-600" />
+                                    {schedule.horario}
+                                    <span className="text-sm font-normal text-muted-foreground">
+                                        — {schedule.nome}
+                                    </span>
+                                    {!schedule.ativo && (
+                                        <span className="text-xs text-red-500 font-bold border border-red-200 px-1.5 py-0.5 rounded">
+                                            PAUSADO
+                                        </span>
+                                    )}
+                                </CardTitle>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => toggleSchedule({ scheduleId: schedule.id, botId: schedule.bot_id })}
+                                        title={schedule.ativo ? "Pausar" : "Retomar"}
+                                    >
+                                        {schedule.ativo ? (
+                                            <Pause className="h-4 w-4 text-yellow-600" />
+                                        ) : (
+                                            <Play className="h-4 w-4 text-green-600" />
+                                        )}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => deleteSchedule({ scheduleId: schedule.id, botId: schedule.bot_id })}
+                                    >
+                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                    </Button>
+                                </div>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-sm mt-2 font-medium">Mensagem:</div>
-                            <div className="text-sm text-muted-foreground line-clamp-2">{schedule.mensagem}</div>
-
-                            <div className="mt-4 text-xs flex items-center gap-2">
-                                <span className={`inline-block w-2 h-2 rounded-full ${schedule.ativo ? "bg-green-500" : "bg-red-500"}`} />
-                                {schedule.ativo ? "Ativo" : "Inativo"}
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="bg-muted px-2 py-1 rounded text-sm font-mono">
+                                    {schedule.origem}
+                                </span>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                <span className="bg-muted px-2 py-1 rounded text-sm font-mono">
+                                    {schedule.destino}
+                                </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                <span className="bg-muted px-2 py-0.5 rounded font-mono">
+                                    📋 Próximo ID: {schedule.msg_id_atual}
+                                </span>
+                                <span className={`px-2 py-0.5 rounded font-bold uppercase ${schedule.tipo_envio === "sequencial"
+                                        ? "bg-green-100 dark:bg-green-900/30 text-green-700"
+                                        : "bg-gray-100 dark:bg-gray-800 text-gray-600"
+                                    }`}>
+                                    {schedule.tipo_envio === "sequencial" ? "🔄 Sequencial" : "⏹ Fixo"}
+                                </span>
                             </div>
                         </CardContent>
-                        <CardFooter className="flex justify-end">
-                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => deleteSchedule(schedule.id)}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </CardFooter>
                     </Card>
                 ))}
-
-                {schedules?.length === 0 && (
-                    <div className="col-span-full text-center py-12 border rounded-lg border-dashed">
-                        <h3 className="text-lg font-medium">Nenhum agendamento</h3>
-                        <p className="text-sm text-muted-foreground mt-2">Crie seu primeiro agendamento.</p>
-                        <Button className="mt-4" variant="outline" onClick={() => setIsSheetOpen(true)}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Agendar
-                        </Button>
+                {(!schedules || schedules.length === 0) && (
+                    <div className="text-center text-muted-foreground py-12">
+                        Nenhum agendamento cadastrado. Clique em "Novo Agendamento".
                     </div>
                 )}
             </div>

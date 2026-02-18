@@ -20,7 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const formSchema = z.object({
     email: z.string().email("Email inválido."),
-    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres."),
+    password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres."),
     confirm_password: z.string(),
 }).refine((data) => data.password === data.confirm_password, {
     message: "As senhas não conferem.",
@@ -49,7 +49,6 @@ export function Register() {
             await authService.register({
                 email: values.email,
                 password: values.password,
-                confirm_password: values.confirm_password
             });
             setSuccess(true);
             setTimeout(() => navigate("/login"), 2000);

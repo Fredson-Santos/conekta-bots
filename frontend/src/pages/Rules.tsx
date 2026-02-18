@@ -1,89 +1,131 @@
 import { useState } from "react";
+import { useBots } from "@/hooks/useBots";
 import { useRules } from "@/hooks/useRules";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, List, Trash2 } from "lucide-react";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { RuleForm } from "@/components/features/rules/RuleForm";
+import { Plus, Trash2, Pause, Play, ArrowRight } from "lucide-react";
 
 export function Rules() {
-    const { rules, isLoading, deleteRule } = useRules();
-    const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-    if (isLoading) {
-        return <div className="p-8">Carregando regras...</div>;
-    }
+    const { bots } = useBots();
+    const { rules, createRule, deleteRule, toggleRule, isCreating } = useRules();
+    const [open, setOpen] = useState(false);
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Regras de Automação</h2>
+                    <h1 className="text-3xl font-bold tracking-tight">⚡ Regras de Repasse</h1>
                     <p className="text-muted-foreground">
-                        Configure respostas automáticas para seus bots.
+                        Gerencie as regras de encaminhamento de mensagens
                     </p>
                 </div>
-
-                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <Sheet open={open} onOpenChange={setOpen}>
                     <SheetTrigger asChild>
                         <Button>
                             <Plus className="mr-2 h-4 w-4" />
                             Nova Regra
                         </Button>
                     </SheetTrigger>
-                    <SheetContent>
+                    <SheetContent className="sm:max-w-lg overflow-y-auto">
                         <SheetHeader>
                             <SheetTitle>Adicionar Nova Regra</SheetTitle>
-                            <SheetDescription>
-                                Defina um gatilho e uma resposta.
-                            </SheetDescription>
                         </SheetHeader>
-                        <RuleForm onSuccess={() => setIsSheetOpen(false)} />
+                        <div className="mt-4">
+                            <RuleForm
+                                bots={bots || []}
+                                onSubmit={(data) => {
+                                    createRule(data, {
+                                        onSuccess: () => setOpen(false),
+                                    });
+                                }}
+                                isLoading={isCreating}
+                            />
+                        </div>
                     </SheetContent>
                 </Sheet>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4">
                 {rules?.map((rule) => (
-                    <Card key={rule.id}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                {rule.nome}
-                            </CardTitle>
-                            <List className="h-4 w-4 text-muted-foreground" />
+                    <Card key={rule.id} className={!rule.ativo ? "opacity-60" : ""}>
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    {rule.nome}
+                                    {!rule.ativo && (
+                                        <span className="text-xs text-red-500 font-bold border border-red-200 px-1.5 py-0.5 rounded">
+                                            PAUSADO
+                                        </span>
+                                    )}
+                                    {rule.converter_shopee && (
+                                        <span className="text-xs text-orange-600 font-bold border border-orange-200 bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded">
+                                            🛍️ Shopee
+                                        </span>
+                                    )}
+                                </CardTitle>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => toggleRule({ ruleId: rule.id, botId: rule.bot_id })}
+                                        title={rule.ativo ? "Pausar" : "Retomar"}
+                                    >
+                                        {rule.ativo ? (
+                                            <Pause className="h-4 w-4 text-yellow-600" />
+                                        ) : (
+                                            <Play className="h-4 w-4 text-green-600" />
+                                        )}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => deleteRule({ ruleId: rule.id, botId: rule.bot_id })}
+                                    >
+                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                    </Button>
+                                </div>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-sm font-bold mt-2">Gatilho: <span className="font-normal font-mono bg-muted px-1 rounded">{rule.gatilho}</span></div>
-                            <div className="text-sm font-bold mt-1">Resposta: <span className="font-normal text-muted-foreground line-clamp-2">{rule.resposta}</span></div>
-
-                            <div className="mt-4 text-xs flex items-center gap-2">
-                                <span className={`inline-block w-2 h-2 rounded-full ${rule.ativo ? "bg-green-500" : "bg-red-500"}`} />
-                                {rule.ativo ? "Ativa" : "Inativa"}
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="bg-muted px-2 py-1 rounded text-sm font-mono">
+                                    {rule.origem}
+                                </span>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                <span className="bg-muted px-2 py-1 rounded text-sm font-mono">
+                                    {rule.destino}
+                                </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                {rule.filtro && (
+                                    <span className="bg-yellow-100 dark:bg-yellow-900/30 px-2 py-0.5 rounded">
+                                        ✂️ Filtro: {rule.filtro}
+                                    </span>
+                                )}
+                                {rule.substituto && (
+                                    <span className="bg-yellow-100 dark:bg-yellow-900/30 px-2 py-0.5 rounded">
+                                        🔄 Substituto: {rule.substituto}
+                                    </span>
+                                )}
+                                {rule.bloqueios && (
+                                    <span className="bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded">
+                                        🚫 Bloqueios: {rule.bloqueios}
+                                    </span>
+                                )}
+                                {rule.somente_se_tiver && (
+                                    <span className="bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded">
+                                        ✅ Whitelist: {rule.somente_se_tiver}
+                                    </span>
+                                )}
                             </div>
                         </CardContent>
-                        <CardFooter className="flex justify-end">
-                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => deleteRule(rule.id)}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </CardFooter>
                     </Card>
                 ))}
-
-                {rules?.length === 0 && (
-                    <div className="col-span-full text-center py-12 border rounded-lg border-dashed">
-                        <h3 className="text-lg font-medium">Nenhuma regra encontrada</h3>
-                        <p className="text-sm text-muted-foreground mt-2">Crie sua primeira automação.</p>
-                        <Button className="mt-4" variant="outline" onClick={() => setIsSheetOpen(true)}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nova Regra
-                        </Button>
+                {(!rules || rules.length === 0) && (
+                    <div className="text-center text-muted-foreground py-12">
+                        Nenhuma regra cadastrada. Clique em "Nova Regra".
                     </div>
                 )}
             </div>

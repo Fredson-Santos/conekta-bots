@@ -1,38 +1,29 @@
 import api from "@/lib/api";
-import type { AuthResponse, LoginCredentials, RegisterData } from "../types";
+import type { Token, LoginCredentials, RegisterData, User } from "../types";
 
 export const authService = {
-    login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-        // Basic Auth or FormData?
-        // FastAPI OAuth2PasswordRequestForm expects form-data usually.
-        // Let's check backend implementation.
-        // Task 5 said: "POST /api/v1/auth/login -> Token".
-        // Usually it uses OAuth2PasswordRequestForm which is form-data.
-        // I'll check if I should use JSON or FormData.
-        // The previous work on Swagger Login used python-multipart, so it IS form-data.
-
-        // However, if we look at `test_auth_endpoints.py` or similar, we can confirm.
-        // I'll assume JSON for now, if it fails I'll switch to FormData.
-        // Actually, clean architecture often changes this to JSON.
-        // But FastAPI `OAuth2PasswordRequestForm` dependency requires form-data.
-        // Let's assume standard JSON body for our custom Clean Arch `auth.py` unless it uses that dependency.
-        // I'll check `backend/app/api/v1/endpoints/auth.py` LATER if needed.
-        // For now, I'll send JSON. If it's form-data, I'll change headers.
-
-        // Safer bet: The backend likely expects JSON if it's a "clean" REST API, 
-        // unless strictly following OAuth2 spec for token endpoint.
-        // Let's try JSON first.
-        const { data } = await api.post<AuthResponse>("/auth/login", credentials);
+    login: async (credentials: LoginCredentials): Promise<Token> => {
+        const { data } = await api.post<Token>("/auth/login", credentials);
         return data;
     },
 
     register: async (data: RegisterData): Promise<any> => {
-        const response = await api.post("/auth/register", data);
+        const response = await api.post("/auth/register", {
+            email: data.email,
+            password: data.password,
+        });
         return response.data;
     },
 
-    getCurrentUser: async (): Promise<any> => {
-        const { data } = await api.get("/users/me");
+    getCurrentUser: async (): Promise<User> => {
+        const { data } = await api.get<User>("/auth/me");
+        return data;
+    },
+
+    refresh: async (refreshToken: string): Promise<Token> => {
+        const { data } = await api.post<Token>("/auth/refresh", null, {
+            params: { refresh_token: refreshToken },
+        });
         return data;
     },
 };

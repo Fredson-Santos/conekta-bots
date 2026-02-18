@@ -1,53 +1,51 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { botService } from "@/services/botService";
-import type { BotUpdate } from "@/services/botService";
+import type { BotCreate } from "@/services/botService";
 
-export const useBots = () => {
+export function useBots() {
     const queryClient = useQueryClient();
 
-    const botsQuery = useQuery({
+    const { data: bots, isLoading } = useQuery({
         queryKey: ["bots"],
         queryFn: botService.getAll,
     });
 
-    const createBotMutation = useMutation({
-        mutationFn: botService.create,
+    const { mutate: createBot, isPending: isCreating } = useMutation({
+        mutationFn: (data: BotCreate) => botService.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["bots"] });
         },
     });
 
-    const updateBotMutation = useMutation({
-        mutationFn: ({ id, data }: { id: number; data: BotUpdate }) =>
+    const { mutate: updateBot } = useMutation({
+        mutationFn: ({ id, data }: { id: number; data: any }) =>
             botService.update(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["bots"] });
         },
     });
 
-    const deleteBotMutation = useMutation({
-        mutationFn: botService.delete,
+    const { mutate: deleteBot } = useMutation({
+        mutationFn: (id: number) => botService.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["bots"] });
         },
     });
 
-    const toggleBotMutation = useMutation({
-        mutationFn: botService.toggle,
+    const { mutate: toggleBot } = useMutation({
+        mutationFn: (id: number) => botService.toggle(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["bots"] });
-        }
+        },
     });
 
     return {
-        bots: botsQuery.data,
-        isLoading: botsQuery.isLoading,
-        isError: botsQuery.isError,
-        error: botsQuery.error,
-        createBot: createBotMutation.mutate,
-        updateBot: updateBotMutation.mutate,
-        deleteBot: deleteBotMutation.mutate,
-        toggleBot: toggleBotMutation.mutate,
-        isCreating: createBotMutation.isPending,
+        bots,
+        isLoading,
+        createBot,
+        isCreating,
+        updateBot,
+        deleteBot,
+        toggleBot,
     };
-};
+}

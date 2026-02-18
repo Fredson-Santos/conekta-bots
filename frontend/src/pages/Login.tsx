@@ -30,7 +30,8 @@ const formSchema = z.object({
 
 export function Login() {
     const navigate = useNavigate();
-    const setAuth = useAuthStore((state) => state.setAuth);
+    const setTokens = useAuthStore((state) => state.setTokens);
+    const setUser = useAuthStore((state) => state.setUser);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -46,11 +47,18 @@ export function Login() {
         setIsLoading(true);
         setError(null);
         try {
-            // Backend likely returns token. We might need to fetch user details separately
-            // if not included in login response.
-            // Based on types, AuthResponse includes user.
-            const data = await authService.login(values);
-            setAuth(data);
+            const tokenData = await authService.login(values);
+            setTokens(tokenData);
+
+            // Fetch user data after login
+            try {
+                const user = await authService.getCurrentUser();
+                setUser(user);
+            } catch {
+                // User data will be fetched later if this fails
+                console.warn("Could not fetch user data after login");
+            }
+
             navigate("/");
         } catch (err: any) {
             console.error(err);

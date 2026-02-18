@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette import status
 
+from app.api.deps import get_current_user
 from app.core.exceptions import ConflictException, UnauthorizedException
 from app.db.session import get_db
 from app.schemas.user import Token, UserCreate, UserLogin, UserResponse
@@ -42,6 +43,15 @@ async def login(data: UserLogin, db: Session = Depends(get_db)):
     if not user:
         raise UnauthorizedException(detail="Email ou senha incorretos")
     return AuthService.create_tokens(user.id)
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_info(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """Retorna dados do usuário autenticado."""
+    return current_user
 
 
 @router.post("/refresh", response_model=Token)

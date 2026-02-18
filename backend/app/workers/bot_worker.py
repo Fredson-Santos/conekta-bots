@@ -264,10 +264,9 @@ class BotWorker:
                         self.bot_nome, regra_nome, e,
                     )
 
-            # Envia mensagem (preserva o objeto original para mídia)
-            msg_obj = event.message
-            msg_obj.text = mensagem_final
-            await self.fila_envio.put((destino, msg_obj, regra_nome, event.chat_id))
+            # Coloca na fila: texto + mídia separados
+            media = event.message.media
+            await self.fila_envio.put((destino, mensagem_final, media, regra_nome, event.chat_id))
 
         self.client.add_event_handler(
             handler, events.NewMessage(chats=origens)
@@ -286,7 +285,7 @@ class BotWorker:
         """Processa fila de envio de mensagens."""
         while self._running:
             try:
-                destino, mensagem, regra_nome, origem = await asyncio.wait_for(
+                destino, texto, media, regra_nome, origem = await asyncio.wait_for(
                     self.fila_envio.get(), timeout=1.0
                 )
             except asyncio.TimeoutError:
@@ -294,10 +293,14 @@ class BotWorker:
 
             db = SessionLocal()
             try:
-                await self.client.send_message(destino, mensagem)
+                # Envia com mídia (foto/vídeo/doc) ou só texto
+                if media:
+                    await self.client.send_file(
+                        destino, media, caption=texto or None
+                    )
+                else:
+                    await self.client.send_message(destino, texto)
 
-                # Extrai texto para o log (mensagem pode ser str ou Message)
-                texto_log = mensagem if isinstance(mensagem, str) else (mensagem.text or "")
                 LogService.create(
                     db,
                     bot_id=self.bot_id,
@@ -305,7 +308,7 @@ class BotWorker:
                     origem=str(origem),
                     destino=str(destino),
                     status="sucesso",
-                    mensagem=texto_log[:200],
+                    mensagem=(texto or "")[:200],
                 )
                 logger.info(
                     "🚀 [%s] %s → %s (regra: %s)",
@@ -320,7 +323,7 @@ class BotWorker:
                 )
                 await asyncio.sleep(e.seconds)
                 # Recoloca na fila para tentar novamente
-                await self.fila_envio.put((destino, mensagem, regra_nome, origem))
+                await self.fila_envio.put((destino, texto, media, regra_nome, origem))
             except Exception as e:
                 LogService.create(
                     db,

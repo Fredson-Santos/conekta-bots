@@ -1,0 +1,95 @@
+# 🔄 ConektaBots - Refatoração Fase 1: Separação Front/Back
+
+## Fase 1A: Reestruturação Backend (Clean Architecture)
+
+- [x] **Task 1: Criar estrutura de diretórios do backend**
+  - Criar `backend/app/` com subdiretórios: `api/v1/endpoints/`, `core/`, `models/`, `schemas/`, `services/`, `workers/`, `db/`
+  - Criar `backend/tests/unit/`, `backend/tests/integration/`
+  - Criar `backend/requirements/` com `base.txt`, `dev.txt`, `prod.txt`
+
+- [x] **Task 2: Configuração base e Database Layer**
+  - Criar `app/core/config.py` com Pydantic Settings (env vars)
+  - Criar `app/db/base.py` e `app/db/session.py` (SQLAlchemy 2.0)
+  - Migrar modelos SQLModel → SQLAlchemy 2.0 em `app/models/`
+  - Setup Alembic para migrations
+
+- [x] **Task 3: Criar Schemas Pydantic (DTOs)**
+  - `app/schemas/bot.py` - BotCreate, BotUpdate, BotResponse
+  - `app/schemas/rule.py` - RuleCreate, RuleUpdate, RuleResponse
+  - `app/schemas/schedule.py` - ScheduleCreate, ScheduleUpdate, ScheduleResponse
+  - `app/schemas/log.py` - LogResponse
+  - `app/schemas/user.py` - UserCreate, UserLogin, UserResponse, Token
+
+- [x] **Task 4: Implementar Services Layer**
+  - `app/services/bot_service.py` - CRUD de bots + lógica de negócio
+  - `app/services/rule_service.py` - CRUD de regras
+  - `app/services/schedule_service.py` - CRUD de agendamentos
+  - `app/services/telegram_service.py` - Abstração do Telethon
+
+- [x] **Task 5: Implementar Autenticação (JWT)**
+  - `app/core/security.py` - JWT tokens, password hashing (bcrypt)
+  - `app/models/user.py` - Modelo User (SQLAlchemy)
+  - `app/services/auth_service.py` - Login, register, token refresh
+  - `app/api/deps.py` - get_db, get_current_user dependencies
+
+- [x] **Task 6: Refatorar Endpoints (API Routers)**
+  - `app/api/v1/endpoints/auth.py` - Login/Register/Refresh
+  - `app/api/v1/endpoints/bots.py` - CRUD bots (REST API puro)
+  - `app/api/v1/endpoints/rules.py` - CRUD regras
+  - `app/api/v1/endpoints/schedules.py` - CRUD agendamentos
+  - `app/api/v1/endpoints/analytics.py` - Logs/métricas
+  - `app/api/v1/router.py` - Registrar todos os routers
+
+- [x] **Task 6.5: Tratamento de Exceções Global**
+  - `app/core/exceptions.py` - Exceções customizadas (NotFound, Forbidden, Conflict, etc.)
+  - `app/core/exception_handlers.py` - Handlers globais p/ FastAPI (HTTPException, ValidationError, Exception genérica)
+  - Respostas de erro padronizadas com `{"detail": ..., "error_code": ...}`
+  - Logging estruturado de erros
+
+- [x] **Task 7: Refatorar Workers**
+  - `app/workers/bot_worker.py` - BotWorker usando services
+  - `app/workers/scheduler_worker.py` - Scheduler usando services
+  - Adaptar `manager.py` para nova estrutura
+
+- [x] **Task 8: Criar main.py e integrar tudo**
+  - `app/main.py` - FastAPI app com CORS, routers, lifespan
+  - Atualizar `Dockerfile` para nova estrutura
+  - Atualizar `docker-compose.yml`
+  - Criar `.env.example`
+
+- [x] **Task 9: Testes do Backend**
+  - Testes unitários para services
+  - Testes de integração para API endpoints
+  - Configurar pytest + fixtures
+  - [x] **Support Swagger OAuth2 Login** (Added /token endpoint + python-multipart)
+
+## Fase 1B: Frontend React (SPA)
+
+- [ ] **Task 10: Setup Frontend (Vite + React + TypeScript)**
+  - Inicializar projeto com Vite
+  - Instalar dependências (TanStack Query, Axios, Zustand, shadcn/ui)
+  - Estrutura de diretórios
+
+- [ ] **Task 11: Layout e Auth**
+  - Componentes de Layout (Header, Sidebar, Layout)
+  - Auth store (Zustand) + API client (Axios)
+  - Páginas Login/Register
+  - Route guards (proteção de rotas)
+
+- [ ] **Task 12: Páginas principais**
+  - Dashboard com stats
+  - Bot Management (list, create, edit, delete)
+  - Rule Management (list, create, edit, delete)
+  - Schedule Management
+  - Logs/Analytics
+
+## Fase 1C: Infraestrutura
+
+- [ ] **Task 13: Docker + Nginx**
+  - Dockerfile para frontend (multi-stage build)
+  - Nginx config (reverse proxy API + SPA)
+  - Atualizar docker-compose.yml (3 services: web, api, manager)
+
+- [ ] **Task 14: CI/CD atualizado**
+  - Atualizar GitHub Actions para nova estrutura
+  - Build separado front/back

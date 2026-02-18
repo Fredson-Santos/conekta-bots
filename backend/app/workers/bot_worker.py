@@ -211,17 +211,23 @@ class BotWorker:
 
         async def handler(event):
             texto = event.message.text or ""
+            texto_lower = texto.lower()
 
-            # Filtro: bloqueia se contiver palavras bloqueadas
+            # Filtro: bloqueia se contiver palavras bloqueadas (case-insensitive)
             if bloqueios:
                 palavras_bloqueadas = [p.strip() for p in bloqueios.split(",")]
-                if any(p in texto for p in palavras_bloqueadas if p):
+                if any(p.strip().lower() in texto_lower for p in palavras_bloqueadas if p.strip()):
                     return
 
-            # Filtro: só encaminha se contiver palavras obrigatórias
+            # Filtro: só encaminha se contiver palavras obrigatórias (case-insensitive)
             if somente_se_tiver:
-                palavras_obrigatorias = [p.strip() for p in somente_se_tiver.split(",")]
-                if not any(p in texto for p in palavras_obrigatorias if p):
+                palavras_obrigatorias = [p.strip() for p in somente_se_tiver.split(",") if p.strip()]
+                achou = False
+                for p in palavras_obrigatorias:
+                    if re.search(p, texto, re.IGNORECASE) or p.lower() in texto_lower:
+                        achou = True
+                        break
+                if not achou:
                     return
 
             # Filtro: regex ou substring

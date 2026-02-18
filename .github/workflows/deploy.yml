@@ -15,25 +15,32 @@ jobs:
       
       - name: Deploy to Docker Compose
         run: |
-          chmod +x ./deploy.sh
-          ./deploy.sh
+          echo "🚀 Iniciando deploy..."
+          # Força rebuild para garantir que as alterações no código sejam aplicadas
+          docker compose up -d --build --remove-orphans
       
       - name: Verify deployment
         run: |
           echo "Verificando containers..."
           docker compose ps
           
-          # Verifica se os containers estão rodando
-          if ! docker compose ps | grep -q "conekta_web.*Up"; then
-            echo "❌ Container conekta_web não está rodando!"
-            docker compose logs web
+          # Verifica se os containers estão rodando (nomes atualizados do docker-compose.yml atual)
+          if ! docker compose ps | grep -q "conekta-api.*Up"; then
+            echo "❌ Container conekta-api não está rodando!"
+            docker compose logs api
             exit 1
           fi
           
-          if ! docker compose ps | grep -q "conekta_manager.*Up"; then
-            echo "❌ Container conekta_manager não está rodando!"
+          if ! docker compose ps | grep -q "conekta-manager.*Up"; then
+            echo "❌ Container conekta-manager não está rodando!"
             docker compose logs manager
             exit 1
           fi
+          
+          # Frontend ainda não existe, descomentar quando Task 10-13 estiverem prontas
+          # if ! docker compose ps | grep -q "conekta-web.*Up"; then
+          #   echo "❌ Container conekta-web não está rodando!"
+          #   exit 1
+          # fi
           
           echo "✅ Deploy concluído com sucesso!"

@@ -55,3 +55,9 @@ ConektaBots-mvp1.0/
 # Temp/debug scripts
 _check_db.py
 backend/test_shopee.py
+
+# Frontend
+node_modules/
+
+# docs
+docs/

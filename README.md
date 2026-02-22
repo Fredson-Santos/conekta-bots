@@ -24,7 +24,6 @@ worker.py                # Worker assíncrono que executa os bots e regras
 deploy.sh                # Script de deploy automático
 requirements.txt         # Dependências do projeto (versões fixadas)
 templates/               # Templates HTML (Jinja2)
-.github/workflows/       # CI/CD com GitHub Actions
 ```
 
 ## 🚀 Como rodar o projeto
@@ -64,17 +63,6 @@ Acesse o painel: **http://localhost:5005**
    uvicorn app:app --host 0.0.0.0 --port 5005
    ```
 
-## 🔄 CI/CD Automático
-
-O projeto possui deploy automático configurado com GitHub Actions:
-
-- ✅ Push na branch `main` dispara deploy automaticamente
-- ✅ Self-hosted runner no home lab
-- ✅ Rebuild automático das imagens Docker
-- ✅ Verificação de health dos containers
-
-**Para configurar o runner**, veja: [GitHub Actions Self-Hosted Runner](https://github.com/Fredson-Santos/conekta-bots/settings/actions/runners)
-
 ## 🐳 Docker Compose
 
 O projeto roda em **2 serviços**:
@@ -93,7 +81,6 @@ O projeto roda em **2 serviços**:
 - SQLModel (SQLite)
 - Telethon
 - Docker + Docker Compose
-- GitHub Actions (CI/CD)
 
 ## 📝 Observações
 

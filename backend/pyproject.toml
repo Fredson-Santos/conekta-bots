@@ -1,0 +1,87 @@
+[project]
+name = "conekta-bots"
+version = "2.0.0"
+description = "Plataforma de gerenciamento de bots Telegram"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi==0.115.0",
+    "uvicorn[standard]==0.32.0",
+    "sqlalchemy==2.0.36",
+    "alembic==1.14.0",
+    "pydantic-settings==2.7.0",
+    "telethon==1.37.0",
+    "PyJWT[crypto]==2.10.1",
+    "pwdlib[argon2]==0.3.0",
+    "python-multipart==0.0.12",
+    "python-dotenv==1.0.1",
+    "requests>=2.31.0",
+    "email-validator>=2.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.0",
+    "pytest-asyncio==0.24.0",
+    "httpx==0.28.0",
+    "taskipy==1.14.1",
+    "ruff==0.9.7",
+]
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+# ── Taskipy ──────────────────────────────────────────────
+[tool.taskipy.tasks]
+dev = "uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+worker = "python -m app.workers.manager"
+lint = "ruff check . && ruff check . --diff"
+format = "ruff check . --fix && ruff format ."
+test = "pytest tests/ -v --tb=short"
+pre_test = "task lint"
+migrate = "alembic upgrade head"
+makemigrations = "alembic revision --autogenerate -m"
+
+# ── Ruff ─────────────────────────────────────────────────
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+fix = true
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "C4",  # flake8-comprehensions
+    "S",   # flake8-bandit (security)
+    "T20", # flake8-print
+    "RET", # flake8-return
+    "ARG", # flake8-unused-arguments
+]
+ignore = [
+    "S101",  # assert usado em testes
+    "T201",  # print() - permitir temporariamente (logs do worker)
+    "B008",  # Depends() em default args (padrão FastAPI)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "ARG"]
+"app/workers/*" = ["T201"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+# ── Pytest ───────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]

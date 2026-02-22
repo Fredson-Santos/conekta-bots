@@ -210,13 +210,16 @@ class BotWorker:
         regra_converter_shopee = regra.converter_shopee
 
         async def handler(event):
-            texto = event.message.text or ""
-            texto_lower = texto.lower()
+            # Texto: mensagem + caption (mídia pode ter caption em vez de text)
+            text_part = event.message.text or ""
+            caption_part = getattr(event.message, "caption", None) or ""
+            texto = f"{text_part} {caption_part}".strip() if caption_part else text_part
+            texto_normalizado = texto.casefold()  # casefold: case-insensitive robusto (Unicode)
 
             # Filtro: bloqueia se contiver palavras bloqueadas (case-insensitive)
             if bloqueios:
-                palavras_bloqueadas = [p.strip() for p in bloqueios.split(",")]
-                if any(p.strip().lower() in texto_lower for p in palavras_bloqueadas if p.strip()):
+                palavras_bloqueadas = [p.strip().casefold() for p in bloqueios.split(",") if p.strip()]
+                if any(palavra in texto_normalizado for palavra in palavras_bloqueadas):
                     return
 
             # Filtro: só encaminha se contiver palavras obrigatórias (case-insensitive)
@@ -224,14 +227,14 @@ class BotWorker:
                 palavras_obrigatorias = [p.strip() for p in somente_se_tiver.split(",") if p.strip()]
                 achou = False
                 for p in palavras_obrigatorias:
-                    if re.search(p, texto, re.IGNORECASE) or p.lower() in texto_lower:
+                    if re.search(p, texto, re.IGNORECASE) or p.casefold() in texto_normalizado:
                         achou = True
                         break
                 if not achou:
                     return
 
-            # Filtro: regex ou substring
-            if filtro and filtro not in texto:
+            # Filtro: regex ou substring (case-insensitive)
+            if filtro and filtro.casefold() not in texto_normalizado:
                 return
 
             # Substituição (suporta regex como no MVP)

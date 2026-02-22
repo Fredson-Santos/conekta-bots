@@ -30,8 +30,8 @@ async def start_auth(api_id: str, api_hash: str, phone: str) -> str:
     return auth_id
 
 
-async def verify_code(auth_id: str, code: str) -> str:
-    """Verifica código SMS e retorna session_string.
+async def verify_code(auth_id: str, code: str) -> tuple[str, str]:
+    """Verifica código SMS e retorna (session_string, phone).
 
     Raises:
         ValueError: se auth_id não existir ou código inválido.
@@ -41,10 +41,11 @@ async def verify_code(auth_id: str, code: str) -> str:
         raise ValueError("auth_id inválido ou expirado")
 
     client: TelegramClient = auth["client"]
+    phone = auth["phone"]
     try:
-        await client.sign_in(auth["phone"], code)
+        await client.sign_in(phone, code)
         session_string = client.session.save()
-        return session_string
+        return session_string, phone
     except Exception as e:
         raise ValueError(f"Falha na verificação: {e}") from e
     finally:

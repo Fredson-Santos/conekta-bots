@@ -127,15 +127,16 @@ async def verify_telegram_code(
 ):
     """Verifica código SMS e cria o bot autenticado."""
     try:
-        session_string = await telegram_service.verify_code(data.auth_id, data.code)
+        session_string, phone = await telegram_service.verify_code(data.auth_id, data.code)
     except ValueError as e:
         raise BadRequestException(detail=str(e))
 
     bot_data = BotCreate(
-        nome=f"Bot-{data.auth_id[:8]}",
-        api_id="",
-        api_hash="",
+        nome=data.nome,
+        api_id=data.api_id,
+        api_hash=data.api_hash,
         tipo="user",
+        phone=phone,
     )
     bot = BotService.create(db, bot_data, current_user.id)
     bot.session_string = session_string

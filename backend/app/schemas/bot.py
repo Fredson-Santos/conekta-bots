@@ -55,6 +55,9 @@ class BotAuthStart(BaseModel):
 class BotAuthVerify(BaseModel):
     auth_id: str
     code: str
+    nome: str = Field(min_length=1, max_length=100)
+    api_id: str
+    api_hash: str
 
 
 class BotAuthResponse(BaseModel):

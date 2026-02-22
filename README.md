@@ -87,4 +87,4 @@ O projeto roda em **2 serviços**:
 - O banco de dados SQLite (`database.db`) é criado automaticamente na primeira execução
 - Os templates HTML estão na pasta `templates/`
 - O projeto é modular e pode ser expandido para novas funcionalidades
-- Todas as dependências estão com versões fixadas para garantir estabilidade
+- Todas as dependências estão com versões fixadas para garantir estabilidade 
